@@ -1,95 +1,55 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+import { Button, Flex, Input, Typography } from 'antd';
+import TableUser from './components/TableUser';
+import { UserDtoResponse } from './dto/user.dto';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { ApiResponse } from './dto/global.dto';
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+	const [user, setUser] = useState<UserDtoResponse[]>([]);
+	const [userKeyword, setUserKeyword] = useState<UserDtoResponse[]>([]);
+	const [keyword, setKeyword] = useState<string>('');
+	const API_URL = process.env.NEXT_PUBLIC_API_URL as string;
+	const result = 20;
+	const page = 1;
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+	const fetchData = async () => {
+		const response = await axios.get(`${API_URL}/api/user/random-user?results=${result}&page=${page}`);
+		const data: ApiResponse<UserDtoResponse[]> = response.data;
+		setUser(data.data);
+	};
+
+	useEffect(() => {
+		fetchData();
+	}, []);
+
+	const handleSearch = () => {
+		const filteredData = user.filter(item => item.name.toLowerCase().includes(keyword.toLowerCase()));
+		setUserKeyword(filteredData);
+	};
+
+	return (
+		<Flex
+			style={{
+				flexDirection: 'column',
+				padding: 30,
+				gap: '1rem',
+			}}>
+			<Typography.Title level={4}>List</Typography.Title>
+
+			<Flex justify='space-between'>
+				<Input.Search
+					onChange={e => setKeyword(e.target.value)}
+					placeholder='Search'
+					size='large'
+					onSearch={handleSearch}
+					variant='outlined'
+					style={{ width: 500 }}
+				/>
+				<Button size='large'>+ New Data</Button>
+			</Flex>
+			<TableUser data={keyword ? userKeyword : user} />
+		</Flex>
+	);
 }
