@@ -1,5 +1,5 @@
 'use client';
-import { Space, Table, TableProps, Tag } from 'antd';
+import { Space, Table, TableProps } from 'antd';
 import React from 'react';
 import { UserDtoResponse } from '../dto/user.dto';
 
